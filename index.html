@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Nối Thú Sấm Sét</title>
 <meta name="description" content="Game nối thú cổ điển: nối hai quân giống nhau bằng đường tối đa ba đoạn thẳng.">
-<meta name="theme-color" content="#0f2e24">
+<meta name="theme-color" content="#0d1330">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800&family=Bungee&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;700;800&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -68,6 +68,9 @@
     <div class="timer" id="timer">
       <div class="timer-fill" id="timerFill"></div>
     </div>
+    <span class="combo-pill" id="comboPill" hidden aria-label="Combo đang chạy">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 1.5 4 13.8h6.8L9.5 22.5 20 9.7h-7z"/></svg><b>×2</b><i class="drain"></i>
+    </span>
     <span class="timer-text" id="timerText">0s</span>
   </section>
 
@@ -103,6 +106,8 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </div>
+
+<div class="sky-flash" id="skyFlash" aria-hidden="true"></div>
 
 <div class="modal" id="modal" hidden>
   <div class="modal-card" id="modalCard" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div>

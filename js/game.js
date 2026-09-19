@@ -6,7 +6,7 @@ const S = {
   inv: { ...START_INV },
   cfg: null, grid: null, species: [],
   pos: new Map(), els: new Map(),
-  timeLeft: 0, timeMax: 1,
+  timeLeft: 0, timeMax: 1, freeze: 0,
   running: false, paused: false, busy: false,
   selected: null, hint: null, combo: 0, lastMatch: 0, noPathTips: 0,
   tw: 40, th: 48, padX: 22, padY: 26,
@@ -35,7 +35,7 @@ function startLevel(run = true) {
   const { grid, species } = Logic.generate(cfg);
   Object.assign(S, {
     cfg, grid, species,
-    timeLeft: cfg.time, timeMax: cfg.time,
+    timeLeft: cfg.time, timeMax: cfg.time, freeze: 0,
     selected: null, hint: null, combo: 0, lastMatch: 0,
     busy: false, levelStartScore: S.score, running: run,
   });
@@ -44,7 +44,8 @@ function startLevel(run = true) {
   UI.chips(cfg);
   UI.hud(S);
   UI.track(S.level);
-  UI.timer(S.timeLeft, S.timeMax);
+  UI.timer(S.timeLeft, S.timeMax, false);
+  UI.comboPill(0);
   refreshTray();
   lastTick = performance.now();
   save();
@@ -61,6 +62,7 @@ function buildBoard() {
     b.className = 'tile enter';
     b.dataset.id = t.id;
     b.style.setProperty('--d', `${(r + c) * 18}ms`);
+    b.style.setProperty('--hue', Math.round((t.type * 137.508) % 360)); // each species gets its own pastel
     b.innerHTML = `<span class="face">${S.species[t.type]}</span>`;
     b.addEventListener('animationend', (e) => {
       if (e.animationName === 'tileIn') b.classList.remove('enter');
@@ -94,7 +96,7 @@ function layout() {
   const compact = Math.min(innerW, innerH) < 480;
   const ratio = compact ? 1.12 : 1.2;
   const ring = compact ? 0.34 : 0.5; // share of a tile kept free around the board for outside paths
-  const w = Math.max(16, Math.floor(Math.min(innerW / (cols + 2 * ring), innerH / ((rows + 2 * ring) * ratio), 72)));
+  const w = Math.max(16, Math.floor(Math.min(innerW / (cols + 2 * ring), innerH / ((rows + 2 * ring) * ratio), 88)));
   const h = Math.round(w * ratio);
   Object.assign(S, { tw: w, th: h, padX: Math.max(6, Math.round(w * ring)), padY: Math.max(6, Math.round(h * ring)) });
   board.style.width = `${cols * w + 2 * S.padX}px`;
@@ -189,10 +191,17 @@ function doMatch(a, b, path, zap) {
   pair.forEach((t) => S.els.get(t.id).classList.add('gone'));
 
   const now = performance.now();
-  S.combo = now - S.lastMatch < 3500 ? S.combo + 1 : 1;
+  S.combo = now - S.lastMatch < COMBO_WINDOW ? S.combo + 1 : 1;
   S.lastMatch = now;
   S.score += 10 + (S.combo - 1) * 5;
-  if (S.combo >= 2) UI.combo(S.combo);
+  const freeze = freezeFor(S.combo);
+  if (freeze > S.freeze) {
+    S.freeze = freeze;
+    Sound.freeze();
+    UI.flash();
+  }
+  UI.comboPill(S.combo);
+  if (S.combo >= 2) UI.combo(S.combo, freeze);
   if (zap) Sound.zap(); else Sound.match(S.combo);
   buzz(zap ? 40 : 12);
   UI.hud(S);
@@ -260,7 +269,8 @@ function tick(now) {
   const dt = Math.min(0.25, (now - lastTick) / 1000);
   lastTick = now;
   if (S.running && !S.paused && !UI.isModalOpen()) {
-    S.timeLeft -= dt;
+    if (S.freeze > 0) S.freeze = Math.max(0, S.freeze - dt); // combo reward: the clock stands still
+    else S.timeLeft -= dt;
     if (S.timeLeft <= 0) {
       S.timeLeft = 0;
       S.running = false;
@@ -270,7 +280,7 @@ function tick(now) {
       Flow.timeUp();
     }
   }
-  if (S.cfg) UI.timer(S.timeLeft, S.timeMax);
+  if (S.cfg) UI.timer(S.timeLeft, S.timeMax, S.freeze > 0);
   requestAnimationFrame(tick);
 }
 

@@ -7,6 +7,7 @@ const UI = (() => {
     timer: $('#timer'), timerFill: $('#timerFill'), timerText: $('#timerText'),
     chips: $('#levelInfo'), tray: $('#tray'), track: $('#track'),
     toast: $('#toast'), modal: $('#modal'), card: $('#modalCard'), combo: $('#combo'),
+    comboPill: $('#comboPill'), skyFlash: $('#skyFlash'),
   };
   const fmt = (n) => Math.round(n).toLocaleString('vi-VN');
   const restart = (node, cls) => { node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); };
@@ -26,10 +27,11 @@ const UI = (() => {
   }
 
   let shownSeconds = -1;
-  function timer(left, max) {
+  function timer(left, max, frozen) {
     const f = Math.max(0, Math.min(1, left / max));
     el.timerFill.style.transform = `scaleX(${f})`;
     el.timer.classList.toggle('low', f < 0.2 && left > 0);
+    el.timer.classList.toggle('frozen', !!frozen);
     const s = Math.ceil(Math.max(0, left));
     if (s !== shownSeconds) { shownSeconds = s; el.timerText.textContent = `${s}s`; }
   }
@@ -99,10 +101,24 @@ const UI = (() => {
     toastTimer = setTimeout(() => el.toast.classList.remove('show'), ms);
   }
 
-  function combo(n) {
-    el.combo.textContent = `Combo ×${n}`;
+  function combo(n, freeze) {
+    el.combo.innerHTML = `<span>Combo ×${n}</span>${freeze ? `<small>Dừng giờ ${freeze.toLocaleString('vi-VN')} giây</small>` : ''}`;
     restart(el.combo, 'show');
   }
+
+  /* Small pill beside the clock: the bar drains over the combo window. */
+  let pillTimer;
+  function comboPill(n) {
+    clearTimeout(pillTimer);
+    el.comboPill.hidden = n < 2;
+    if (n < 2) return;
+    el.comboPill.querySelector('b').textContent = `×${n}`;
+    el.comboPill.style.setProperty('--combo-ms', `${COMBO_WINDOW}ms`);
+    restart(el.comboPill, 'live');
+    pillTimer = setTimeout(() => { el.comboPill.hidden = true; }, COMBO_WINDOW);
+  }
+
+  function flash() { restart(el.skyFlash, 'on'); }
 
   function openModal(html) {
     el.card.innerHTML = html;
@@ -127,5 +143,5 @@ const UI = (() => {
     else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
   });
 
-  return { fmt, hud, lives, timer, chips, buildTray, tray, flashPower, track, trackHTML, toast, combo, openModal, closeModal, isModalOpen };
+  return { fmt, hud, lives, timer, chips, buildTray, tray, flashPower, track, trackHTML, toast, combo, comboPill, flash, openModal, closeModal, isModalOpen };
 })();

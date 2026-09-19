@@ -21,13 +21,18 @@ Repo được Vercel deploy tự động mỗi khi push lên `main`, nên mở l
 
 ## Độ khó tăng sau mỗi lần thắng
 
-| Màn | Bàn | Số loài | Giây / cặp | Quân tự dồn |
-|---|---|---|---|---|
-| 1 | 5×8 | 11 | 6.0 | Đứng yên |
-| 3 | 6×10 | 15 | 5.3 | Dồn xuống |
-| 5 | 7×12 | 19 | 4.6 | Dồn lên |
-| 7 | 8×14 | 23 | 3.9 | Ép vào giữa |
-| 10+ | 10×16 | 29 → 40 | 3.0 | Luân phiên 8 kiểu |
+| Màn | Bàn | Số loài | Giây / cặp | Tổng thời gian | Quân tự dồn |
+|---|---|---|---|---|---|
+| 1 | 5×8 | 11 | 7.0 | 2 phút 20 | Đứng yên |
+| 3 | 6×10 | 15 | 6.4 | 3 phút 12 | Dồn xuống |
+| 5 | 7×12 | 19 | 5.8 | 4 phút 04 | Dồn lên |
+| 7 | 8×14 | 23 | 5.2 | 4 phút 51 | Ép vào giữa |
+| 10 | 10×16 | 29 | 4.3 | 5 phút 44 | Tách ra |
+| 12+ | 10×16 | 33 → 40 | 3.8 | 5 phút 04 | Luân phiên 8 kiểu |
+
+Thời gian mỗi cặp giảm chậm vì bàn lớn hơn vốn đã tốn thời gian tìm hơn.
+
+**Combo dừng giờ:** nối cặp tiếp theo trong 3,5 giây thì combo tăng lên. Nhãn combo cạnh đồng hồ có vạch cạn dần báo thời gian còn lại. Từ **Combo ×3**, đồng hồ đứng lại 0,5 giây × số combo (×3 được 1,5 giây, ×4 được 2 giây, tối đa 4 giây). Lúc đó thanh giờ chuyển màu băng xanh và bầu trời loé sét.
 
 ## Vật phẩm, hộp quà và mốc thưởng
 
@@ -50,7 +55,7 @@ Phím khác: `P` / `Esc` tạm dừng, `M` bật/tắt âm thanh. Tiến trình 
 
 ```
 index.html            khung trang
-style.css             giao diện máy tính, điện thoại dọc và điện thoại ngang
+style.css             giao diện "Đêm giông" cho máy tính, điện thoại dọc và điện thoại ngang
 manifest.webmanifest  cài lên màn hình chính như ứng dụng
 icons/                biểu tượng ứng dụng
 js/logic.js           sinh bàn, tìm đường ≤ 2 lần rẽ, dồn quân, xáo trộn, cấu hình độ khó

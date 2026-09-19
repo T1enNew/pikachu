@@ -21,6 +21,11 @@ const POWERS = [
 const ITEM_NAMES = { hint: 'Gợi ý', shuffle: 'Xáo trộn', time: 'Thêm giờ', bolt: 'Sét đánh', life: 'Mạng', points: 'Điểm' };
 const OVERFLOW_POINTS = 150;
 
+/* Matching again within the window keeps a combo alive; from ×3 the clock stops briefly. */
+const COMBO_WINDOW = 3500;
+const FREEZE_FROM = 3;
+const freezeFor = (combo) => (combo >= FREEZE_FROM ? Math.min(4, combo * 0.5) : 0);
+
 /* Fixed milestones on the reward track; beyond level 20 every 5th level is a gold chest. */
 const MILESTONES = [
   { level: 2,  title: 'Quà khởi động', give: { hint: 1 } },
@@ -107,6 +112,7 @@ const Sound = (() => {
     },
     miss() { tone(170, 0.14, 'sawtooth', 0.04); },
     power() { [520, 780, 1040].forEach((f, i) => tone(f, 0.09, 'triangle', 0.05, i * 0.05)); },
+    freeze() { [1568, 2093, 2637].forEach((f, i) => tone(f, 0.16, 'sine', 0.045, i * 0.05)); },
     zap() { tone(1400, 0.05, 'sawtooth', 0.04); tone(300, 0.2, 'square', 0.03, 0.04); },
     win() { [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.18, 'triangle', 0.06, i * 0.11)); },
     gift() { [880, 1175, 1568].forEach((f, i) => tone(f, 0.12, 'sine', 0.06, i * 0.07)); },

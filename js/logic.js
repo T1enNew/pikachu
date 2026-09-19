@@ -21,12 +21,13 @@ const Logic = (() => {
   const GRAVITY_ORDER = ['none', 'none', 'down', 'left', 'up', 'right', 'inV', 'outH', 'inH', 'outV'];
   const SIZES = [[5, 8], [6, 8], [6, 10], [7, 10], [7, 12], [8, 12], [8, 14], [9, 14], [9, 16], [10, 16]];
 
-  /* Each win moves one step up: bigger board, more species, less time per pair, tiles that shift. */
+  /* Each win moves one step up: bigger board, more species, less time per pair, tiles that shift.
+     Time per pair falls gently because bigger boards already take longer to scan. */
   function levelConfig(level) {
     const [rows, cols] = SIZES[Math.min(level, SIZES.length) - 1];
     const pairs = (rows * cols) / 2;
     const types = Math.min(SPECIES.length, 9 + level * 2);
-    const perPair = Math.max(3, 6 - (level - 1) * 0.35);
+    const perPair = Math.max(3.8, 7 - (level - 1) * 0.3);
     const gravity = level <= GRAVITY_ORDER.length
       ? GRAVITY_ORDER[level - 1]
       : GRAVITY_ORDER[2 + ((level - 1) % (GRAVITY_ORDER.length - 2))];

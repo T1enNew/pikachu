@@ -76,7 +76,7 @@ const Flow = (() => {
       <h2 class="m-title" id="modalTitle">Nối nhanh, nối gọn</h2>
       <ol class="rules">
         <li><b>Chọn 2 quân giống nhau.</b> Nối được khi đường giữa chúng rẽ tối đa 2 lần và không cắt qua quân khác. Đường được phép vòng ra ngoài mép bàn.</li>
-        <li><b>Xoá sạch bàn trước khi hết giờ.</b> Nối liên tiếp trong 3,5 giây để ăn combo cộng điểm.</li>
+        <li><b>Xoá sạch bàn trước khi hết giờ.</b> Nối liên tiếp trong 3,5 giây để ăn combo cộng điểm. Từ <b>Combo ×3</b>, đồng hồ đứng lại 1,5 giây, combo càng dài càng lâu (tối đa 4 giây).</li>
         <li><b>Mỗi lần thắng, độ khó tăng:</b> bàn lớn hơn, nhiều loài hơn, ít giây hơn cho mỗi cặp. Từ màn 3, quân tự dồn theo hướng sau mỗi lần nối.</li>
         <li><b>Thắng màn</b> được chọn 1 trong 3 hộp quà. Qua các <b>mốc thưởng</b> nhận thêm quà cố định.</li>
         <li><b>Mỗi vật phẩm giữ tối đa 3 lượt</b>, kể cả mạng. Quà vượt mức đổi thành ${OVERFLOW_POINTS} điểm.</li>
@@ -118,6 +118,8 @@ const Flow = (() => {
 
   function win() {
     Sound.win();
+    UI.flash();
+    UI.comboPill(0);
     refreshTray();
     const frac = S.timeLeft / S.timeMax;
     const stars = frac >= 0.5 ? 3 : frac >= 0.25 ? 2 : 1;
@@ -293,7 +295,7 @@ const Flow = (() => {
     const saved = loadSave();
     if (saved) Object.assign(S, saved);
     startLevel(false); // board sits ready behind the start screen
-    showStart(!!saved);
+    showStart(!!saved && (saved.level > 1 || saved.score > 0));
     requestAnimationFrame(tick);
   }
 
