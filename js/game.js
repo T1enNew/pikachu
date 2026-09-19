@@ -73,11 +73,20 @@ function buildBoard() {
   syncPositions();
 }
 
-/* Turn the board a quarter so its long side runs along the long side of the play area.
-   Paths are symmetric, so every pair that could connect still can. */
-function orient(innerW, innerH) {
+/* Tile width that fits a rows × cols board (plus its free ring) into the play area. */
+function fitWidth(rows, cols, innerW, innerH, ratio, ring) {
+  return Math.min(innerW / (cols + 2 * ring), innerH / ((rows + 2 * ring) * ratio), 88);
+}
+
+/* Turn the board a quarter whenever that gives clearly bigger tiles: phones and tablets
+   rotating, or a near-square iPad area. Paths are symmetric, so every pair that could
+   connect still can. The 6% margin stops it flipping while browser bars slide. */
+function orient(innerW, innerH, ratio, ring) {
   const { rows, cols } = S.cfg;
-  if (rows === cols || (innerH > innerW) === (rows > cols)) return;
+  if (rows === cols) return;
+  const now = fitWidth(rows, cols, innerW, innerH, ratio, ring);
+  const turned = fitWidth(cols, rows, innerW, innerH, ratio, ring);
+  if (turned <= now * 1.06) return;
   const g = S.grid;
   S.grid = g[0].map((_, c) => g.map((row) => row[c]));
   [S.cfg.rows, S.cfg.cols] = [cols, rows];
@@ -91,12 +100,12 @@ function layout() {
   const innerW = boardWrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   const innerH = boardWrap.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
   if (innerW < 50 || innerH < 50) return;
-  orient(innerW, innerH);
-  const { rows, cols } = S.cfg;
   const compact = Math.min(innerW, innerH) < 480;
   const ratio = compact ? 1.12 : 1.2;
   const ring = compact ? 0.34 : 0.5; // share of a tile kept free around the board for outside paths
-  const w = Math.max(16, Math.floor(Math.min(innerW / (cols + 2 * ring), innerH / ((rows + 2 * ring) * ratio), 88)));
+  orient(innerW, innerH, ratio, ring);
+  const { rows, cols } = S.cfg;
+  const w = Math.max(16, Math.floor(fitWidth(rows, cols, innerW, innerH, ratio, ring)));
   const h = Math.round(w * ratio);
   Object.assign(S, { tw: w, th: h, padX: Math.max(6, Math.round(w * ring)), padY: Math.max(6, Math.round(h * ring)) });
   board.style.width = `${cols * w + 2 * S.padX}px`;
@@ -319,6 +328,8 @@ board.addEventListener('click', (e) => {
   if (b && e.detail === 0) onTile(Number(b.dataset.id));
 });
 board.addEventListener('contextmenu', (e) => e.preventDefault());
+/* iOS Safari ignores user-scalable, so stop a stray pinch from zooming the board mid-game. */
+['gesturestart', 'gesturechange'].forEach((ev) => document.addEventListener(ev, (e) => e.preventDefault()));
 
 document.addEventListener('keydown', (e) => {
   if (e.ctrlKey || e.metaKey || e.altKey || UI.isModalOpen()) return;
