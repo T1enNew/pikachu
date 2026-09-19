@@ -1,0 +1,93 @@
+<title>Nối Thú Sấm Sét</title>
+<meta name="description" content="Game nối thú cổ điển: nối hai quân giống nhau bằng đường tối đa ba đoạn thẳng.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800&family=Bungee&display=swap">
+<link rel="stylesheet" href="style.css">
+
+<div class="app" id="app">
+  <header class="hud">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M13.5 1.5 4 13.8h6.8L9.5 22.5 20 9.7h-7z"/></svg>
+      </span>
+      <h1 class="brand-name">Nối Thú<span>Sấm Sét</span></h1>
+    </div>
+
+    <dl class="stats">
+      <div class="stat">
+        <dt>Màn</dt>
+        <dd id="levelVal">1</dd>
+      </div>
+      <div class="stat">
+        <dt>Điểm</dt>
+        <dd id="scoreVal">0</dd>
+      </div>
+      <div class="stat">
+        <dt>Mạng</dt>
+        <dd class="hearts" id="livesVal"></dd>
+      </div>
+      <div class="stat stat-best">
+        <dt>Kỷ lục</dt>
+        <dd id="bestVal">0</dd>
+      </div>
+    </dl>
+
+    <div class="hud-actions">
+      <button class="icon-btn" id="btnPause" type="button" title="Tạm dừng (P)" aria-label="Tạm dừng">
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+      </button>
+      <button class="icon-btn" id="btnSound" type="button" title="Bật/tắt âm thanh (M)" aria-label="Âm thanh" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="wave" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="mute" d="M16 9l6 6M22 9l-6 6"/></svg>
+      </button>
+      <button class="icon-btn" id="btnHelp" type="button" title="Cách chơi" aria-label="Cách chơi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 9a3 3 0 1 1 4.2 2.8c-.8.3-1.2 1-1.2 1.8V14"/><circle cx="12" cy="18" r=".6" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="meter" aria-label="Thời gian">
+    <div class="timer" id="timer">
+      <div class="timer-fill" id="timerFill"></div>
+    </div>
+    <span class="timer-text" id="timerText">0s</span>
+  </section>
+
+  <ul class="chips" id="levelInfo" aria-label="Độ khó màn hiện tại"></ul>
+
+  <main class="stage">
+    <section class="board-wrap" id="boardWrap">
+      <div class="board" id="board">
+        <svg class="link-layer" id="linkLayer" aria-hidden="true"></svg>
+      </div>
+      <div class="combo" id="combo" aria-hidden="true"></div>
+      <div class="pause-cover" id="pauseCover" hidden>
+        <p class="pause-title">Đang tạm dừng</p>
+        <button class="btn btn-primary" id="btnResume" type="button">Chơi tiếp</button>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel tray-panel">
+        <h2 class="panel-title">Vật phẩm <small>tối đa 3 mỗi loại</small></h2>
+        <div class="tray" id="tray"></div>
+      </section>
+      <section class="panel track-panel">
+        <h2 class="panel-title">Mốc thưởng</h2>
+        <ol class="track" id="track"></ol>
+      </section>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-card" id="modalCard" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div>
+</div>
+
+<script src="js/logic.js"></script>
+<script src="js/rewards.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+<script src="js/flow.js"></script>
