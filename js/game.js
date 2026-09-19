@@ -24,12 +24,14 @@ function eachTile(fn) {
 
 function refreshTray() { UI.tray(S.inv, S.running && !S.paused); }
 
+/* Short vibration on phones that support it; follows the sound switch. */
+function buzz(pattern) {
+  if (!Sound.on || !navigator.vibrate) return;
+  try { navigator.vibrate(pattern); } catch (e) { /* not allowed */ }
+}
+
 function startLevel(run = true) {
   const cfg = Logic.levelConfig(S.level);
-  // Phones held upright get a tall board instead of a wide one.
-  if (window.innerWidth < 700 && window.innerHeight > window.innerWidth && cfg.cols > cfg.rows) {
-    [cfg.rows, cfg.cols] = [cfg.cols, cfg.rows];
-  }
   const { grid, species } = Logic.generate(cfg);
   Object.assign(S, {
     cfg, grid, species,
@@ -69,26 +71,37 @@ function buildBoard() {
   syncPositions();
 }
 
-/* Fit the board (plus the empty ring that paths may use) into the space left on screen. */
+/* Turn the board a quarter so its long side runs along the long side of the play area.
+   Paths are symmetric, so every pair that could connect still can. */
+function orient(innerW, innerH) {
+  const { rows, cols } = S.cfg;
+  if (rows === cols || (innerH > innerW) === (rows > cols)) return;
+  const g = S.grid;
+  S.grid = g[0].map((_, c) => g.map((row) => row[c]));
+  [S.cfg.rows, S.cfg.cols] = [cols, rows];
+  UI.chips(S.cfg);
+}
+
+/* Fit the board (plus the empty ring that paths may use) into the play area. */
 function layout() {
   if (!S.cfg) return;
-  const { rows, cols } = S.cfg;
   const cs = getComputedStyle(boardWrap);
-  const frameX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
-  const frameY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + parseFloat(cs.borderTopWidth) * 2;
-  const innerW = boardWrap.clientWidth - frameX;
-  const docTop = boardWrap.getBoundingClientRect().top + window.scrollY;
-  const reserve = window.innerWidth <= 680 ? 128 : 20;
-  const innerH = Math.max(220, window.innerHeight - docTop - reserve - frameY);
-  const ratio = 1.2;
-  const w = Math.max(18, Math.floor(Math.min(innerW / (cols + 1.1), innerH / ((rows + 1.1) * ratio), 70)));
+  const innerW = boardWrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const innerH = boardWrap.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  if (innerW < 50 || innerH < 50) return;
+  orient(innerW, innerH);
+  const { rows, cols } = S.cfg;
+  const compact = Math.min(innerW, innerH) < 480;
+  const ratio = compact ? 1.12 : 1.2;
+  const ring = compact ? 0.34 : 0.5; // share of a tile kept free around the board for outside paths
+  const w = Math.max(16, Math.floor(Math.min(innerW / (cols + 2 * ring), innerH / ((rows + 2 * ring) * ratio), 72)));
   const h = Math.round(w * ratio);
-  Object.assign(S, { tw: w, th: h, padX: Math.round(w * 0.55), padY: Math.round(h * 0.55) });
+  Object.assign(S, { tw: w, th: h, padX: Math.max(6, Math.round(w * ring)), padY: Math.max(6, Math.round(h * ring)) });
   board.style.width = `${cols * w + 2 * S.padX}px`;
   board.style.height = `${rows * h + 2 * S.padY}px`;
-  board.style.setProperty('--tw', `${w - 3}px`);
-  board.style.setProperty('--th', `${h - 5}px`);
-  board.style.setProperty('--fs', `${Math.round(w * 0.6)}px`);
+  board.style.setProperty('--tw', `${w - (compact ? 2 : 3)}px`);
+  board.style.setProperty('--th', `${h - (compact ? 4 : 5)}px`);
+  board.style.setProperty('--fs', `${Math.round(w * (compact ? 0.68 : 0.6))}px`);
   syncPositions();
 }
 
@@ -101,8 +114,12 @@ function syncPositions() {
   });
 }
 
+/* Cells on the outer ring sit in the middle of the margin, so lines stay inside the board. */
 function center(r, c) {
-  return [S.padX + (c - 1) * S.tw + S.tw / 2, S.padY + (r - 1) * S.th + S.th / 2 - 1];
+  const { rows, cols } = S.cfg;
+  const x = c === 0 ? S.padX / 2 : c === cols + 1 ? S.padX * 1.5 + cols * S.tw : S.padX + (c - 0.5) * S.tw;
+  const y = r === 0 ? S.padY / 2 : r === rows + 1 ? S.padY * 1.5 + rows * S.th : S.padY + (r - 0.5) * S.th - 1;
+  return [x, y];
 }
 
 function drawLink(path, zap) {
@@ -152,6 +169,7 @@ function onTile(id) {
   const path = Logic.findPath(S.grid, a, b);
   if (!path) {
     Sound.miss();
+    buzz([25, 40, 25]);
     shake(S.selected, id);
     deselect();
     if (S.noPathTips++ < 2) UI.toast('Không nối được: đường nối chỉ được rẽ tối đa 2 lần và không cắt qua quân khác');
@@ -176,6 +194,7 @@ function doMatch(a, b, path, zap) {
   S.score += 10 + (S.combo - 1) * 5;
   if (S.combo >= 2) UI.combo(S.combo);
   if (zap) Sound.zap(); else Sound.match(S.combo);
+  buzz(zap ? 40 : 12);
   UI.hud(S);
 
   const cleared = Logic.remaining(S.grid) === 0;
@@ -265,17 +284,31 @@ function setPaused(p) {
   if (p) $('#btnResume').focus({ preventScroll: true });
 }
 
+function showSoundState() {
+  $('#btnSound').setAttribute('aria-pressed', String(Sound.on));
+  $('#btnPauseSound').textContent = `Âm thanh: ${Sound.on ? 'Bật' : 'Tắt'}`;
+}
+
 function toggleSound() {
   const on = Sound.toggle();
-  $('#btnSound').setAttribute('aria-pressed', String(on));
-  UI.toast(on ? 'Đã bật âm thanh' : 'Đã tắt âm thanh', 1400);
+  showSoundState();
+  UI.toast(on ? 'Đã bật âm thanh và rung' : 'Đã tắt âm thanh và rung', 1400);
 }
 
 /* ---------- Input ---------- */
+/* Touch and mouse act on press for instant feedback; keyboard (Enter/Space) arrives as a click with detail 0. */
+board.addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  const b = e.target.closest('.tile');
+  if (!b) return;
+  e.preventDefault();
+  onTile(Number(b.dataset.id));
+});
 board.addEventListener('click', (e) => {
   const b = e.target.closest('.tile');
-  if (b) onTile(Number(b.dataset.id));
+  if (b && e.detail === 0) onTile(Number(b.dataset.id));
 });
+board.addEventListener('contextmenu', (e) => e.preventDefault());
 
 document.addEventListener('keydown', (e) => {
   if (e.ctrlKey || e.metaKey || e.altKey || UI.isModalOpen()) return;
@@ -290,8 +323,11 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden && S.running && !UI.isModalOpen()) setPaused(true);
 });
 
+/* Re-fit whenever the play area changes: rotation, browser bars sliding, fonts arriving. */
 let resizeTimer;
-window.addEventListener('resize', () => {
+const refit = () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(layout, 120);
-});
+  resizeTimer = setTimeout(layout, 80);
+};
+if (window.ResizeObserver) new ResizeObserver(refit).observe(boardWrap);
+else window.addEventListener('resize', refit);

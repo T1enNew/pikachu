@@ -63,10 +63,22 @@ const Sound = (() => {
   let on = true;
   try { on = localStorage.getItem('noithu.sound') !== 'off'; } catch (e) { /* storage blocked */ }
 
+  /* Mobile browsers only start audio inside a real tap, so wake the context on the first one. */
+  const unlockEvents = ['pointerup', 'touchend', 'keydown'];
+  function unlock() {
+    try {
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === 'suspended') ctx.resume();
+      if (ctx.state === 'running') unlockEvents.forEach((ev) => window.removeEventListener(ev, unlock));
+    } catch (e) { /* audio unavailable */ }
+  }
+  unlockEvents.forEach((ev) => window.addEventListener(ev, unlock, { passive: true }));
+
   function tone(freq, dur, type = 'sine', gain = 0.06, delay = 0) {
     if (!on) return;
     try {
       ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === 'suspended') ctx.resume();
       const t = ctx.currentTime + delay;
       const osc = ctx.createOscillator();
       const g = ctx.createGain();

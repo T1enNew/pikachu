@@ -4,7 +4,16 @@ Game nối thú theo lối Pikachu cổ điển, chạy thẳng trên trình duy
 
 ## Chơi thế nào
 
-Mở `index.html` bằng Chrome, Edge hoặc Firefox là chơi được ngay.
+Repo được Vercel deploy tự động mỗi khi push lên `main`, nên mở link Vercel của dự án trên máy tính hoặc điện thoại là chơi được ngay. Khi chơi trên máy, mở thẳng `index.html` bằng Chrome, Edge hoặc Firefox là được. Đây là trang tĩnh, không cần build.
+
+**Trên điện thoại:**
+- Cả game nằm gọn trong một màn hình, không phải cuộn. Thanh vật phẩm nằm ở cạnh dưới cho dễ bấm bằng ngón cái.
+- Bàn cờ tự xoay theo chiều máy, kể cả khi đang chơi mà bạn xoay ngang hoặc dọc.
+- Quân được chọn ngay khi ngón tay chạm vào. Máy rung nhẹ khi nối được (trên Android), và tắt âm thanh thì rung cũng tắt theo.
+- Các hộp thoại mở dạng ngăn kéo từ dưới lên. Nút rương ở góc trên mở bảng mốc thưởng.
+- Có thể chọn "Thêm vào màn hình chính" để chơi toàn màn hình như một ứng dụng.
+
+**Luật chơi:**
 
 - Chọn 2 quân giống nhau. Hai quân nối được khi đường giữa chúng rẽ **tối đa 2 lần** và không cắt qua quân khác. Đường được phép vòng ra ngoài mép bàn.
 - Xoá sạch bàn trước khi hết giờ. Nối liên tiếp trong 3,5 giây sẽ ăn **combo** cộng điểm.
@@ -19,8 +28,6 @@ Mở `index.html` bằng Chrome, Edge hoặc Firefox là chơi được ngay.
 | 5 | 7×12 | 19 | 4.6 | Dồn lên |
 | 7 | 8×14 | 23 | 3.9 | Ép vào giữa |
 | 10+ | 10×16 | 29 → 40 | 3.0 | Luân phiên 8 kiểu |
-
-Trên điện thoại cầm dọc, bàn tự xoay thành dạng đứng cho dễ bấm.
 
 ## Vật phẩm, hộp quà và mốc thưởng
 
@@ -42,11 +49,13 @@ Phím khác: `P` / `Esc` tạm dừng, `M` bật/tắt âm thanh. Tiến trình 
 ## Cấu trúc
 
 ```
-index.html      khung trang
-style.css       giao diện (bàn nỉ, quân bài ngà, hộp quà)
-js/logic.js     sinh bàn, tìm đường ≤ 2 lần rẽ, dồn quân, xáo trộn, cấu hình độ khó
-js/rewards.js   vật phẩm, mốc thưởng, hộp quà, âm thanh
-js/ui.js        vẽ HUD, khay vật phẩm, thanh mốc thưởng, hộp thoại
-js/game.js      trạng thái, chọn và nối quân, đồng hồ, dùng vật phẩm
-js/flow.js      màn bắt đầu, thắng, hết giờ, thua, lưu tiến trình
+index.html            khung trang
+style.css             giao diện máy tính, điện thoại dọc và điện thoại ngang
+manifest.webmanifest  cài lên màn hình chính như ứng dụng
+icons/                biểu tượng ứng dụng
+js/logic.js           sinh bàn, tìm đường ≤ 2 lần rẽ, dồn quân, xáo trộn, cấu hình độ khó
+js/rewards.js         vật phẩm, mốc thưởng, hộp quà, âm thanh
+js/ui.js              vẽ HUD, khay vật phẩm, thanh mốc thưởng, hộp thoại
+js/game.js            trạng thái, chọn và nối quân, đồng hồ, dùng vật phẩm
+js/flow.js            màn bắt đầu, thắng, hết giờ, thua, lưu tiến trình
 ```

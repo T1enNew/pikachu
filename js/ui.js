@@ -75,12 +75,14 @@ const UI = (() => {
   }
 
   /* Shows the two most recent milestones and the next ones, so progress reads as a path. */
-  function track(level) {
+  function track(level) { el.track.innerHTML = trackHTML(level); }
+
+  function trackHTML(level) {
     const all = MILESTONES.slice();
     for (let l = 25; l <= level + 25; l += 5) all.push(milestoneFor(l));
     const nextIdx = all.findIndex((m) => m.level >= level);
     const start = Math.max(0, nextIdx - 2);
-    el.track.innerHTML = all.slice(start, start + 6).map((m, i) => {
+    return all.slice(start, start + 6).map((m, i) => {
       const state = m.level < level ? 'done' : start + i === nextIdx ? 'next' : '';
       return `<li class="${state}">
         <span class="dot">${m.level}</span>
@@ -125,5 +127,5 @@ const UI = (() => {
     else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
   });
 
-  return { fmt, hud, lives, timer, chips, buildTray, tray, flashPower, track, toast, combo, openModal, closeModal, isModalOpen };
+  return { fmt, hud, lives, timer, chips, buildTray, tray, flashPower, track, trackHTML, toast, combo, openModal, closeModal, isModalOpen };
 })();

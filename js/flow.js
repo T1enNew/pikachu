@@ -81,7 +81,7 @@ const Flow = (() => {
         <li><b>Thắng màn</b> được chọn 1 trong 3 hộp quà. Qua các <b>mốc thưởng</b> nhận thêm quà cố định.</li>
         <li><b>Mỗi vật phẩm giữ tối đa 3 lượt</b>, kể cả mạng. Quà vượt mức đổi thành ${OVERFLOW_POINTS} điểm.</li>
       </ol>
-      <div class="m-section">
+      <div class="m-section keys-section">
         <p class="m-label">Phím tắt</p>
         <div class="keys">
           <kbd>H</kbd><span>Gợi ý: sáng lên một cặp nối được</span>
@@ -97,6 +97,23 @@ const Flow = (() => {
       UI.closeModal();
       if (onClose) onClose();
     });
+  }
+
+  function showTrack() {
+    const card = UI.openModal(`
+      <p class="m-eyebrow">Đang ở màn ${S.level}</p>
+      <h2 class="m-title" id="modalTitle">Mốc thưởng</h2>
+      <p class="m-text">Qua các màn dưới đây để nhận quà cố định, ngoài hộp quà sau mỗi màn thắng.</p>
+      <ol class="track">${UI.trackHTML(S.level)}</ol>
+      <div class="m-section">
+        <p class="m-label">Kho của bạn · tối đa ${MAX_STOCK} mỗi loại</p>
+        <div class="inv-row">
+          ${POWERS.map((p) => `<div><span>${p.name}</span><span class="pips">${Array.from({ length: MAX_STOCK }, (_, i) =>
+            `<i class="pip${i < S.inv[p.id] ? ' on' : ''}"></i>`).join('')}</span></div>`).join('')}
+        </div>
+      </div>
+      <div class="m-actions"><button class="btn btn-primary" data-autofocus>Đóng</button></div>`);
+    card.querySelector('.m-actions button').addEventListener('click', UI.closeModal);
   }
 
   function win() {
@@ -265,8 +282,11 @@ const Flow = (() => {
     $('#btnPause').addEventListener('click', () => setPaused(!S.paused));
     $('#btnResume').addEventListener('click', () => setPaused(false));
     $('#btnSound').addEventListener('click', toggleSound);
-    $('#btnSound').setAttribute('aria-pressed', String(Sound.on));
+    $('#btnPauseSound').addEventListener('click', toggleSound);
+    showSoundState();
     $('#btnHelp').addEventListener('click', () => { if (!UI.isModalOpen()) help(); });
+    $('#btnPauseHelp').addEventListener('click', () => help());
+    $('#btnTrack').addEventListener('click', () => { if (!UI.isModalOpen()) showTrack(); });
 
     try { S.best = Number(localStorage.getItem(BEST_KEY)) || 0; } catch (e) { S.best = 0; }
     S.bestBefore = S.best;
